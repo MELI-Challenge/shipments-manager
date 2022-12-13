@@ -16,14 +16,10 @@ COPY . .
 
 RUN npm run build
 
-FROM build AS test
-RUN  npm run test
-RUN  npm run coverage
-
-FROM base as release
+FROM build as release
 ARG PROD_NODE_MODULES_PATH
 
-COPY ./build .
+COPY --from=build /root/app/build .
 COPY --from=dependencies "${PROD_NODE_MODULES_PATH}" ./node_modules
 
 EXPOSE 4200
