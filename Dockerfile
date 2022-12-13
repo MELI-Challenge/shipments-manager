@@ -1,26 +1,28 @@
 ARG PROD_NODE_MODULES_PATH=/tmp/prod_node_modules
 
 FROM node:18-alpine3.15 as base
-WORKDIR /root/app
-
+USER node
+WORKDIR /home/node
 
 FROM base as dependencies
 ARG PROD_NODE_MODULES_PATH
-COPY package*.json ./
-RUN npm install --only=production --loglevel verbose
+COPY --chown=node:node package*.json ./
+
+RUN npm install --only=production
 RUN cp -R node_modules "${PROD_NODE_MODULES_PATH}"
 RUN npm install
 
-FROM dependencies as build
-COPY . .
 
+FROM dependencies as build
+COPY --chown=node:node . .
+ENV NODE_ENV production
 RUN npm run build
 
 FROM build as release
 ARG PROD_NODE_MODULES_PATH
 
-COPY --from=build /root/app/build .
-COPY --from=dependencies "${PROD_NODE_MODULES_PATH}" ./node_modules
+COPY --chown=node:node --from=build /home/node/build .
+COPY --chown=node:node --from=build "${PROD_NODE_MODULES_PATH}" ./node_modules
 
 EXPOSE 4200
 
