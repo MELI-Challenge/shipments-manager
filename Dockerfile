@@ -26,4 +26,4 @@ EXPOSE 4200
 
 ENV PORT=4200
 
-CMD npm run start
+ENTRYPOINT ["npm","run","start"]
